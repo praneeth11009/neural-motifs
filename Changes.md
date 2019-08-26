@@ -1,10 +1,6 @@
 # Changes made to migrate to pytorch1.0
 
 
-```
-# 
-
-
 0. Change the paramter async=True in .cuda() method to non_blocking=True
  
 1. For create extensions use cpp_extensions, need to change the files for fpn/roi_align, fpn/nms, lstm.
@@ -13,8 +9,10 @@
 
 3. Modify build.py for roi_align.
 
+4. An implementation of nms, roi_align is at lib/fpn/model/csrc, but arguments and functions names needs to be matched with our current requirements. (these functions are used in the .py wrapper file in functions dir)
 
-#Bugs
+
+# Bugs
 
 1. undefined symbol _Z11ApplyNMSGPU... in the package nms1.so (Need to change cuda file ?)
 
