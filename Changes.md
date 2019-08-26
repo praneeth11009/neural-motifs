@@ -18,7 +18,9 @@
 
 1. undefined symbol _Z11ApplyNMSGPU... in the package nms1.so (Need to change cuda file ?)
 
-2. Build will create the packages in current working directory, need to change the deafult output path to _ext, and fix package file name in the output.
+2. similar error in roi_align : undefined symbol _Z22roi_align_forward_cudai....
+
+3. Build will create the packages in current working directory, need to change the deafult output path to _ext, and fix package file name in the output.
 
 
 
