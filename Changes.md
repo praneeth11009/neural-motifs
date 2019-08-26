@@ -18,5 +18,7 @@
 
 1. undefined symbol _Z11ApplyNMSGPU... in the package nms1.so (Need to change cuda file ?)
 
+2. Build will create the packages in current working directory, need to change the deafult output path to _ext, and fix package file name in the output.
+
 
 
