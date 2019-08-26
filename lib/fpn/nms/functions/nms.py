@@ -1,7 +1,8 @@
 # Le code for doing NMS
 import torch
 import numpy as np
-from .._ext import nms
+from .._ext import nms1
+
 
 
 def apply_nms(scores, boxes,  pre_nms_topn=12000, post_nms_topn=2000, boxes_per_im=None,
@@ -38,7 +39,7 @@ def _nms_single_im(scores, boxes,  pre_nms_topn=12000, post_nms_topn=2000, nms_t
     if idx.size(0) > pre_nms_topn:
         idx = idx[:pre_nms_topn]
     boxes_sorted = boxes[idx].contiguous()
-    num_out = nms.nms_apply(keep, boxes_sorted, nms_thresh)
+    num_out = nms1.nms_apply(keep, boxes_sorted, nms_thresh)
     num_out = min(num_out, post_nms_topn)
     keep = keep[:num_out].long()
     keep = idx[keep.cuda(scores.get_device())]

@@ -154,9 +154,9 @@ class CocoDataLoader(torch.utils.data.DataLoader):
     # def __iter__(self):
     #     for x in super(CocoDataLoader, self).__iter__():
     #         if isinstance(x, tuple) or isinstance(x, list):
-    #             yield tuple(y.cuda(async=True) if hasattr(y, 'cuda') else y for y in x)
+    #             yield tuple(y.cuda(non_blocking=True) if hasattr(y, 'cuda') else y for y in x)
     #         else:
-    #             yield x.cuda(async=True)
+    #             yield x.cuda(non_blocking=True)
 
     @classmethod
     def splits(cls, train_data, val_data, batch_size=3, num_workers=1, num_gpus=3, **kwargs):

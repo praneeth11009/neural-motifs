@@ -7,6 +7,7 @@ from torch.nn import Parameter
 from torch.nn.utils.rnn import PackedSequence, pad_packed_sequence, pack_padded_sequence
 import itertools
 from ._ext import highway_lstm_layer
+import sys
 
 
 def block_orthogonal(tensor, split_sizes, gain=1.0):
@@ -28,10 +29,11 @@ def block_orthogonal(tensor, split_sizes, gain=1.0):
         The gain (scaling) applied to the orthogonal initialization.
     """
 
-    if isinstance(tensor, Variable):
-        block_orthogonal(tensor.data, split_sizes, gain)
-        return tensor
-
+    ### REMOVE THIS if using pytorch0.4 , no distinction btw variable and tensor
+    # if isinstance(tensor, Variable):
+    #     block_orthogonal(tensor.data, split_sizes, gain)
+    #     return tensor
+    ####
     sizes = list(tensor.size())
     if any([a % b != 0 for a, b in zip(sizes, split_sizes)]):
         raise ValueError("tensor dimensions must be divisible by their respective "
@@ -57,6 +59,8 @@ def block_orthogonal(tensor, split_sizes, gain=1.0):
         tensor_copy = tensor.new(max(sizes), max(sizes))
         torch.nn.init.orthogonal(tensor_copy, gain=gain)
         tensor[block_slice] = tensor_copy[0:sizes[0], 0:sizes[1]]
+
+    return tensor # ADD THIS if using pytorch0.4.0
 
 
 class _AlternatingHighwayLSTMFunction(Function):
@@ -225,7 +229,6 @@ class AlternatingHighwayLSTM(torch.nn.Module):
             total_weight_size += input_weights + state_weights
 
             total_bias_size += bias_size
-
         self.weight = Parameter(torch.FloatTensor(total_weight_size))
         self.bias = Parameter(torch.FloatTensor(total_bias_size))
         self.reset_parameters()
@@ -236,7 +239,6 @@ class AlternatingHighwayLSTM(torch.nn.Module):
         bias_index = 0
         for i in range(self.num_layers):
             input_size = self.input_size if i == 0 else self.hidden_size
-
             # Create a tensor of the right size and initialize it.
             init_tensor = self.weight.data.new(input_size, self.hidden_size * 6).zero_()
             block_orthogonal(init_tensor, [input_size, self.hidden_size])

@@ -2,6 +2,7 @@
 
 # This is a script that will evaluate all the models for SGDET
 export CUDA_VISIBLE_DEVICES=$1
+export PYTHONPATH=~/scene_graph/git_pytorch1/neural-motifs
 
 if [ $1 == "0" ]; then
     echo "EVALING THE BASELINE"

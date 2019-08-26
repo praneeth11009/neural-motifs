@@ -11,7 +11,9 @@ from torch.nn import functional as F
 from torch.nn.utils.rnn import PackedSequence
 from lib.resnet import resnet_l4
 from config import BATCHNORM_MOMENTUM
-from lib.fpn.nms.functions.nms import apply_nms
+# from lib.fpn.nms.functions.nms import apply_nms
+from lib.fpn.roi_align.functions.roi_align import RoIAlignFunction
+
 
 # from lib.decoder_rnn import DecoderRNN, lstm_factory, LockedDropout
 from lib.lstm.decoder_rnn import DecoderRNN
@@ -24,7 +26,6 @@ from lib.pytorch_misc import transpose_packed_sequence_inds, to_onehot, arange, 
 from lib.sparse_targets import FrequencyBias
 from lib.surgery import filter_dets
 from lib.word_vectors import obj_edge_vectors
-from lib.fpn.roi_align.functions.roi_align import RoIAlignFunction
 import math
 
 
@@ -90,7 +91,7 @@ class LinearizedContext(nn.Module):
 
         assert order in ('size', 'confidence', 'random', 'leftright')
         self.order = order
-
+        # print('LIN CONTEXT : Start')
         # EMBEDDINGS
         embed_vecs = obj_edge_vectors(self.classes, wv_dim=self.embed_dim)
         self.obj_embed = nn.Embedding(self.num_classes, self.embed_dim)
@@ -98,7 +99,7 @@ class LinearizedContext(nn.Module):
 
         self.obj_embed2 = nn.Embedding(self.num_classes, self.embed_dim)
         self.obj_embed2.weight.data = embed_vecs.clone()
-
+        # print('LIN CONTEXT : 0')
         # This probably doesn't help it much
         self.pos_embed = nn.Sequential(*[
             nn.BatchNorm1d(4, momentum=BATCHNORM_MOMENTUM / 10.0),
@@ -106,25 +107,25 @@ class LinearizedContext(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(0.1),
         ])
-
+        # print('LIN CONTEXT : 1')
         if self.nl_obj > 0:
+            # print('LIN CONTEXT : 1.1')
             self.obj_ctx_rnn = AlternatingHighwayLSTM(
                 input_size=self.obj_dim+self.embed_dim+128,
                 hidden_size=self.hidden_dim,
                 num_layers=self.nl_obj,
                 recurrent_dropout_probability=dropout_rate)
-
+            # print('LIN CONTEXT : 1.5')
             decoder_inputs_dim = self.hidden_dim
             if self.pass_in_obj_feats_to_decoder:
                 decoder_inputs_dim += self.obj_dim + self.embed_dim
-
             self.decoder_rnn = DecoderRNN(self.classes, embed_dim=self.embed_dim,
                                           inputs_dim=decoder_inputs_dim,
                                           hidden_dim=self.hidden_dim,
                                           recurrent_dropout_probability=dropout_rate)
         else:
             self.decoder_lin = nn.Linear(self.obj_dim + self.embed_dim + 128, self.num_classes)
-
+        # print('LIN CONTEXT : 2')
         if self.nl_edge > 0:
             input_dim = self.embed_dim
             if self.nl_obj > 0:
@@ -135,6 +136,7 @@ class LinearizedContext(nn.Module):
                                                        hidden_size=self.hidden_dim,
                                                        num_layers=self.nl_edge,
                                                        recurrent_dropout_probability=dropout_rate)
+        # print('LIN CONTEXT : Over')
 
     def sort_rois(self, batch_idx, confidence, box_priors):
         """
@@ -336,7 +338,7 @@ class RelModel(nn.Module):
         self.use_tanh = use_tanh
         self.limit_vision=limit_vision
         self.require_overlap = require_overlap_det and self.mode == 'sgdet'
-
+        # print('REL MODEL CONSTRUCTOR: 1')
         self.detector = ObjectDetector(
             classes=classes,
             mode=('proposals' if use_proposals else 'refinerels') if mode == 'sgdet' else 'gtbox',
@@ -344,7 +346,7 @@ class RelModel(nn.Module):
             thresh=thresh,
             max_per_img=64,
         )
-
+        # print('REL MODEL CONSTRUCTOR: 2')
         self.context = LinearizedContext(self.classes, self.rel_classes, mode=self.mode,
                                          embed_dim=self.embed_dim, hidden_dim=self.hidden_dim,
                                          obj_dim=self.obj_dim,
@@ -352,11 +354,10 @@ class RelModel(nn.Module):
                                          order=order,
                                          pass_in_obj_feats_to_decoder=pass_in_obj_feats_to_decoder,
                                          pass_in_obj_feats_to_edge=pass_in_obj_feats_to_edge)
-
         # Image Feats (You'll have to disable if you want to turn off the features from here)
         self.union_boxes = UnionBoxesAndFeats(pooling_size=self.pooling_size, stride=16,
                                               dim=1024 if use_resnet else 512)
-
+        # print('REL MODEL CONSTRUCTOR: 3')
         if use_resnet:
             self.roi_fmap = nn.Sequential(
                 resnet_l4(relu_end=False),
@@ -372,7 +373,7 @@ class RelModel(nn.Module):
                 roi_fmap.append(nn.Linear(4096, pooling_dim))
             self.roi_fmap = nn.Sequential(*roi_fmap)
             self.roi_fmap_obj = load_vgg(pretrained=False).classifier
-
+        # print('REL MODEL CONSTRUCTOR: 4')
         ###################################
         self.post_lstm = nn.Linear(self.hidden_dim, self.pooling_dim * 2)
 
@@ -382,7 +383,7 @@ class RelModel(nn.Module):
         # In practice the pre-lstm stuff tends to have stdev 0.1 so I multiplied this by 10.
         self.post_lstm.weight.data.normal_(0, 10.0 * math.sqrt(1.0 / self.hidden_dim))
         self.post_lstm.bias.data.zero_()
-
+        # print('REL MODEL CONSTRUCTOR: 5')
         if nl_edge == 0:
             self.post_emb = nn.Embedding(self.num_classes, self.pooling_dim*2)
             self.post_emb.weight.data.normal_(0, math.sqrt(1.0))
@@ -391,6 +392,7 @@ class RelModel(nn.Module):
         self.rel_compress.weight = torch.nn.init.xavier_normal(self.rel_compress.weight, gain=1.0)
         if self.use_bias:
             self.freq_bias = FrequencyBias()
+        # print('REL MODEL CONSTRUCTOR: over')
 
     @property
     def num_classes(self):

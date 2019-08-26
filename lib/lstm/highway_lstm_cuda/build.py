@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name
 import os
 import torch
-from torch.utils.ffi import create_extension
+from torch.utils.cpp_extension import create_extension
 
 if not torch.cuda.is_available():
     raise Exception('HighwayLSTM can only be compiled with CUDA')

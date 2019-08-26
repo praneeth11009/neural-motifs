@@ -58,7 +58,12 @@ class VG(Dataset):
         )
 
         self.filenames = load_image_filenames(image_file)
-        self.filenames = [self.filenames[i] for i in np.where(self.split_mask)[0]]
+        # CHANGE
+        index_list = np.where(self.split_mask)[0]
+        trimmed_list = list(filter(lambda x: x < len(self.filenames), index_list))
+        print("num files, num of files that will be used", len(self.filenames), len(trimmed_list))
+        # END
+        self.filenames = [self.filenames[i] for i in trimmed_list]
 
         self.ind_to_classes, self.ind_to_predicates = load_info(dict_file)
 
@@ -257,7 +262,8 @@ def load_image_filenames(image_file, image_dir=VG_IMAGES):
         filename = os.path.join(image_dir, basename)
         if os.path.exists(filename):
             fns.append(filename)
-    assert len(fns) == 108073
+    # print('no of imgs', len(fns))
+    assert len(fns) >= 5000 ## Not using all images currently
     return fns
 
 
