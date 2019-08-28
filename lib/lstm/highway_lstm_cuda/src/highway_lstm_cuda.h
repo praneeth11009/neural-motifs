@@ -1,3 +1,5 @@
+#include <THC/THC.h>
+
 int highway_lstm_forward_cuda(int inputSize, int hiddenSize, int miniBatch, int numLayers, int seqLength,
     THCudaTensor *x, THIntTensor *lengths, THCudaTensor *h_data,
     THCudaTensor *c_data, THCudaTensor *tmp_i,

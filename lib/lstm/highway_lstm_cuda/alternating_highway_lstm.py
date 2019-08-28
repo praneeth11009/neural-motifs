@@ -6,8 +6,9 @@ from torch.autograd import Function, Variable
 from torch.nn import Parameter
 from torch.nn.utils.rnn import PackedSequence, pad_packed_sequence, pack_padded_sequence
 import itertools
-from ._ext import highway_lstm_layer
-import sys
+import importlib
+from ._ext import highway_lstm_layer1 as highway_lstm_layer
+# from ._ext import highway_lstm_layer
 
 
 def block_orthogonal(tensor, split_sizes, gain=1.0):

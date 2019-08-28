@@ -12,12 +12,12 @@ from torch.nn.utils.rnn import PackedSequence
 from lib.resnet import resnet_l4
 from config import BATCHNORM_MOMENTUM
 # from lib.fpn.nms.functions.nms import apply_nms
-from lib.fpn.roi_align.functions.roi_align import RoIAlignFunction
+# from lib.fpn.roi_align.functions.roi_align import RoIAlignFunction
 
 
 # from lib.decoder_rnn import DecoderRNN, lstm_factory, LockedDropout
-from lib.lstm.decoder_rnn import DecoderRNN
 from lib.lstm.highway_lstm_cuda.alternating_highway_lstm import AlternatingHighwayLSTM
+from lib.lstm.decoder_rnn import DecoderRNN
 from lib.fpn.box_utils import bbox_overlaps, center_size
 from lib.get_union_boxes import UnionBoxesAndFeats
 from lib.fpn.proposal_assignments.rel_assignments import rel_assignments
