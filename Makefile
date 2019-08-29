@@ -7,8 +7,8 @@ draw_rectangles:
 box_intersections:
 	cd lib/fpn/box_intersections_cpu; python setup.py build_ext --inplace
 nms:
-	cd lib/fpn/nms; make
+	cd lib/fpn/nms; ./make.sh
 roi_align:
-	cd lib/fpn/roi_align; make
+	cd lib/fpn/roi_align; ./make.sh
 lstm:
 	cd lib/lstm/highway_lstm_cuda; ./make.sh

@@ -35,8 +35,6 @@ done
 echo "Building kernel for following target architectures: "
 echo $CUDA_MODEL_TARGETS
 
-cd src
+
 echo "Compiling kernel"
-nvcc -c -o highway_lstm_kernel.cu.o highway_lstm_kernel.cu --compiler-options -fPIC $CUDA_MODEL_TARGETS
-cd ../
-python build.py
+python build.py build_ext
