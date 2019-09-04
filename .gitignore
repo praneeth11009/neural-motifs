@@ -8,6 +8,8 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+without_ground_truth/
+qualitative*/
 env/
 build/
 develop-eggs/
